@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Layout } from './components/Layout';
 import { ProjectsView } from './components/views/ProjectsView';
@@ -8,13 +7,17 @@ import { OrgSettings } from './components/views/OrgSettings';
 import { TalentPool } from './components/views/TalentPool';
 import { RequestModal } from './components/RequestModal';
 import { ActionCentre } from './components/ActionCentre';
+import { FinOpsView } from './components/views/FinOpsView';
+import { IntegrationsView } from './components/views/IntegrationsView';
+import { CollaboratorModal } from './components/CollaboratorModal';
 import { MOCK_PROJECTS, MOCK_BLUEPRINTS, MOCK_REQUESTS, MOCK_ROLES, MOCK_USERS, MOCK_CANDIDATES, MOCK_BUDGET_TREND, MOCK_FUNNEL_DATA } from './constants';
-import { CreditRequest, ViewState, RoleDefinition, UserContext } from './types';
+import { CreditRequest, ViewState, RoleDefinition, UserContext, Project } from './types';
 import { ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid, AreaChart, Area, ScatterChart, Scatter, FunnelChart, Funnel, LabelList } from 'recharts';
 
 function App() {
   const [activeView, setActiveView] = useState<ViewState>('dashboard');
   const [currentUser, setCurrentUser] = useState<UserContext>(MOCK_USERS[0]); // Default to Org Owner
+  const [isCollabModalOpen, setIsCollabModalOpen] = useState(false);
   
   const [projects, setProjects] = useState(MOCK_PROJECTS);
   const [requests, setRequests] = useState(MOCK_REQUESTS);
@@ -65,6 +68,10 @@ function App() {
   const handleReject = (id: string) => {
     setRequests(prev => prev.map(r => r.id === id ? { ...r, status: 'rejected' } : r));
     handleCloseModal();
+  };
+
+  const handleUpdateProject = (projectId: string, updates: Partial<Project>) => {
+    setProjects(prev => prev.map(p => p.id === projectId ? { ...p, ...updates } : p));
   };
 
   const handleSaveRole = (updatedRole: RoleDefinition) => {
@@ -212,13 +219,26 @@ function App() {
         onSwitchUser={setCurrentUser}
     >
       {activeView === 'dashboard' && <DashboardHome />}
-      {activeView === 'projects' && <ProjectsView projects={visibleProjects} />}
+      {activeView === 'projects' && (
+        <ProjectsView 
+            projects={visibleProjects} 
+            onManageAccess={() => setIsCollabModalOpen(true)} 
+            onUpdateProject={handleUpdateProject}
+        />
+      )}
       {activeView === 'blueprints' && <BlueprintLibrary blueprints={MOCK_BLUEPRINTS} />}
       {activeView === 'roles' && <RoleManager roles={roles} currentUser={currentUser} onSaveRole={handleSaveRole} />}
+      
       {activeView === 'settings' && currentUser.role === 'ORG_OWNER' && <OrgSettings />}
+      {activeView === 'finops' && currentUser.role === 'ORG_OWNER' && <FinOpsView onManageAccess={() => setIsCollabModalOpen(true)} />}
+      {activeView === 'integrations' && <IntegrationsView onManageAccess={() => setIsCollabModalOpen(true)} />}
       
       {activeView === 'talent' && (
-        <TalentPool candidates={visibleCandidates} isGlobalView={currentUser.role === 'ORG_OWNER'} />
+        <TalentPool 
+            candidates={visibleCandidates} 
+            isGlobalView={currentUser.role === 'ORG_OWNER'} 
+            onManageAccess={() => setIsCollabModalOpen(true)}
+        />
       )}
 
       <RequestModal 
@@ -228,6 +248,12 @@ function App() {
         onClose={handleCloseModal}
         onApprove={handleApprove}
         onReject={handleReject}
+      />
+      
+      <CollaboratorModal 
+            isOpen={isCollabModalOpen} 
+            onClose={() => setIsCollabModalOpen(false)} 
+            activeView={activeView}
       />
     </Layout>
   );

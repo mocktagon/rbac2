@@ -1,7 +1,8 @@
+
 import React, { useState } from 'react';
 import { RoleDefinition, PermissionSetting, AccessLevel, UserContext } from '../../types';
-import { FEATURES_LIST } from '../../constants';
-import { Users, Shield, Edit, Plus, Check, ChevronLeft, Eye, Ban, Lock } from 'lucide-react';
+import { FEATURES_LIST, MOCK_USERS } from '../../constants';
+import { Users, Shield, Edit, Plus, Check, ChevronLeft, Eye, Ban, Lock, Search, Trash2, UserPlus } from 'lucide-react';
 
 interface RoleManagerProps {
   roles: RoleDefinition[];
@@ -12,6 +13,7 @@ interface RoleManagerProps {
 export const RoleManager: React.FC<RoleManagerProps> = ({ roles, currentUser, onSaveRole }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [currentRole, setCurrentRole] = useState<RoleDefinition | null>(null);
+  const [activeTab, setActiveTab] = useState<'permissions' | 'members'>('permissions');
 
   // Filter roles based on user scope
   const visibleRoles = roles.filter(role => {
@@ -36,11 +38,13 @@ export const RoleManager: React.FC<RoleManagerProps> = ({ roles, currentUser, on
     if (currentUser.role === 'PROJECT_OWNER' && role.scope === 'Global') return;
     
     setCurrentRole({ ...role, permissions: [...role.permissions] });
+    setActiveTab('permissions');
     setIsEditing(true);
   };
 
   const handleCreate = () => {
     setCurrentRole(emptyRole);
+    setActiveTab('permissions');
     setIsEditing(true);
   };
 
@@ -109,109 +113,175 @@ export const RoleManager: React.FC<RoleManagerProps> = ({ roles, currentUser, on
             </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-8 space-y-8">
-            <div className="grid grid-cols-2 gap-8">
-                <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-1">Role Name</label>
-                    <input 
-                        type="text" 
-                        value={currentRole.name} 
-                        onChange={e => setCurrentRole({...currentRole, name: e.target.value})}
-                        className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" 
-                        placeholder="e.g. Vendor Interviewer"
-                    />
-                </div>
-                <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-1">Scope</label>
-                    {currentUser.role === 'ORG_OWNER' ? (
-                         <select 
-                            value={currentRole.scope}
-                            onChange={e => setCurrentRole({...currentRole, scope: e.target.value as any})}
-                            className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none bg-white"
-                        >
-                            <option value="Global">Global (All Projects)</option>
-                            <option value="Project">Project Specific (Single Project)</option>
-                        </select>
-                    ) : (
-                        <div className="w-full px-4 py-2 border border-slate-200 bg-slate-50 text-slate-500 rounded-lg cursor-not-allowed">
-                            Project Specific (Locked)
-                        </div>
-                    )}
-                </div>
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col min-h-[600px]">
+            {/* Tabs */}
+            <div className="flex border-b border-slate-200 px-6">
+                <button 
+                    onClick={() => setActiveTab('permissions')}
+                    className={`py-4 px-2 text-sm font-bold border-b-2 mr-6 transition-colors ${activeTab === 'permissions' ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+                >
+                    Permissions & Scope
+                </button>
+                <button 
+                    onClick={() => setActiveTab('members')}
+                    className={`py-4 px-2 text-sm font-bold border-b-2 transition-colors ${activeTab === 'members' ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+                >
+                    Assigned Members ({currentRole.activeUsers})
+                </button>
             </div>
-            <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1">Description</label>
-                <textarea 
-                    value={currentRole.description}
-                    onChange={e => setCurrentRole({...currentRole, description: e.target.value})}
-                    className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none h-20 resize-none"
-                />
-            </div>
-            
-            {/* The Matrix */}
-            <div>
-                <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
-                    <Shield size={20} className="text-indigo-600" /> 
-                    Access Matrix
-                </h3>
-                <div className="border rounded-lg overflow-hidden border-slate-200">
-                    <table className="w-full text-left border-collapse">
-                        <thead className="bg-slate-50">
-                            <tr>
-                                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider w-1/3">Feature</th>
-                                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider w-1/3">Access Level</th>
-                                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider w-1/3">Constraint / Mask</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-200">
-                            {FEATURES_LIST.map((feature) => {
-                                // Hide Governance features from Project Owners if they shouldn't even see them
-                                if (currentUser.role === 'PROJECT_OWNER' && feature.category === 'Governance') return null;
 
-                                const perm = getPermission(feature.id);
-                                return (
-                                    <tr key={feature.id} className="hover:bg-slate-50 transition-colors">
-                                        <td className="px-6 py-4">
-                                            <p className="font-semibold text-slate-900">{feature.name}</p>
-                                            <p className="text-xs text-slate-500">{feature.category} - {feature.description}</p>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="flex gap-1 bg-slate-100 p-1 rounded-lg inline-flex">
-                                                {(['FULL', 'PARTIAL', 'VIEW', 'NONE'] as AccessLevel[]).map((level) => (
-                                                    <button
-                                                        key={level}
-                                                        onClick={() => updatePermission(feature.id, { accessLevel: level })}
-                                                        className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all ${
-                                                            perm.accessLevel === level 
-                                                            ? 'bg-white shadow-sm text-indigo-600' 
-                                                            : 'text-slate-400 hover:text-slate-600'
-                                                        }`}
-                                                    >
-                                                        {level}
-                                                    </button>
-                                                ))}
+            <div className="p-8">
+                {activeTab === 'permissions' ? (
+                    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                        <div className="grid grid-cols-2 gap-8">
+                            <div>
+                                <label className="block text-sm font-semibold text-slate-700 mb-1">Role Name</label>
+                                <input 
+                                    type="text" 
+                                    value={currentRole.name} 
+                                    onChange={e => setCurrentRole({...currentRole, name: e.target.value})}
+                                    className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" 
+                                    placeholder="e.g. Vendor Interviewer"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold text-slate-700 mb-1">Scope</label>
+                                {currentUser.role === 'ORG_OWNER' ? (
+                                    <select 
+                                        value={currentRole.scope}
+                                        onChange={e => setCurrentRole({...currentRole, scope: e.target.value as any})}
+                                        className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none bg-white"
+                                    >
+                                        <option value="Global">Global (All Projects)</option>
+                                        <option value="Project">Project Specific (Single Project)</option>
+                                    </select>
+                                ) : (
+                                    <div className="w-full px-4 py-2 border border-slate-200 bg-slate-50 text-slate-500 rounded-lg cursor-not-allowed">
+                                        Project Specific (Locked)
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                        <div>
+                            <label className="block text-sm font-semibold text-slate-700 mb-1">Description</label>
+                            <textarea 
+                                value={currentRole.description}
+                                onChange={e => setCurrentRole({...currentRole, description: e.target.value})}
+                                className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none h-20 resize-none"
+                            />
+                        </div>
+                        
+                        {/* The Matrix */}
+                        <div>
+                            <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+                                <Shield size={20} className="text-indigo-600" /> 
+                                Access Matrix
+                            </h3>
+                            <div className="border rounded-lg overflow-hidden border-slate-200">
+                                <table className="w-full text-left border-collapse">
+                                    <thead className="bg-slate-50">
+                                        <tr>
+                                            <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider w-1/3">Feature</th>
+                                            <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider w-1/3">Access Level</th>
+                                            <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider w-1/3">Constraint / Mask</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-200">
+                                        {FEATURES_LIST.map((feature) => {
+                                            if (currentUser.role === 'PROJECT_OWNER' && feature.category === 'Governance') return null;
+
+                                            const perm = getPermission(feature.id);
+                                            return (
+                                                <tr key={feature.id} className="hover:bg-slate-50 transition-colors">
+                                                    <td className="px-6 py-4">
+                                                        <p className="font-semibold text-slate-900">{feature.name}</p>
+                                                        <p className="text-xs text-slate-500">{feature.category} - {feature.description}</p>
+                                                    </td>
+                                                    <td className="px-6 py-4">
+                                                        <div className="flex gap-1 bg-slate-100 p-1 rounded-lg inline-flex">
+                                                            {(['FULL', 'PARTIAL', 'VIEW', 'NONE'] as AccessLevel[]).map((level) => (
+                                                                <button
+                                                                    key={level}
+                                                                    onClick={() => updatePermission(feature.id, { accessLevel: level })}
+                                                                    className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all ${
+                                                                        perm.accessLevel === level 
+                                                                        ? 'bg-white shadow-sm text-indigo-600' 
+                                                                        : 'text-slate-400 hover:text-slate-600'
+                                                                    }`}
+                                                                >
+                                                                    {level}
+                                                                </button>
+                                                            ))}
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-6 py-4">
+                                                        <input 
+                                                            type="text" 
+                                                            disabled={perm.accessLevel === 'NONE' || perm.accessLevel === 'FULL'}
+                                                            value={perm.constraint || ''}
+                                                            onChange={(e) => updatePermission(feature.id, { constraint: e.target.value })}
+                                                            placeholder={perm.accessLevel === 'FULL' ? 'Full Access' : (perm.accessLevel === 'NONE' ? 'No Access' : 'e.g. Mask Phone/Email')}
+                                                            className={`w-full pl-3 pr-4 py-2 border border-slate-200 rounded-lg text-sm outline-none ${
+                                                                (perm.accessLevel === 'NONE' || perm.accessLevel === 'FULL')
+                                                                ? 'bg-slate-50 text-slate-400 cursor-not-allowed'
+                                                                : 'focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500'
+                                                            }`}
+                                                        />
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                        <div className="flex justify-between items-center bg-slate-50 p-4 rounded-xl border border-slate-200">
+                             <div className="relative flex-1 max-w-md">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                                <input 
+                                    type="text" 
+                                    placeholder="Search users to add..." 
+                                    className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none" 
+                                />
+                             </div>
+                             <button className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium shadow-sm transition-colors text-sm">
+                                <UserPlus size={16} /> Add Member
+                             </button>
+                        </div>
+                        
+                        <div>
+                            <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">Assigned Users</h4>
+                            <div className="grid grid-cols-1 gap-3">
+                                {/* Mock showing users assigned */}
+                                {MOCK_USERS.slice(0, currentRole.activeUsers > 0 ? 2 : 0).map((u, i) => (
+                                    <div key={i} className="flex items-center justify-between p-3 border border-slate-100 rounded-lg hover:border-slate-200 transition-colors bg-white">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-9 h-9 rounded-full bg-slate-200 flex items-center justify-center text-xs font-bold text-slate-600">
+                                                {u.avatar}
                                             </div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <input 
-                                                type="text" 
-                                                disabled={perm.accessLevel === 'NONE' || perm.accessLevel === 'FULL'}
-                                                value={perm.constraint || ''}
-                                                onChange={(e) => updatePermission(feature.id, { constraint: e.target.value })}
-                                                placeholder={perm.accessLevel === 'FULL' ? 'Full Access' : (perm.accessLevel === 'NONE' ? 'No Access' : 'e.g. Mask Phone/Email')}
-                                                className={`w-full pl-3 pr-4 py-2 border border-slate-200 rounded-lg text-sm outline-none ${
-                                                    (perm.accessLevel === 'NONE' || perm.accessLevel === 'FULL')
-                                                    ? 'bg-slate-50 text-slate-400 cursor-not-allowed'
-                                                    : 'focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500'
-                                                }`}
-                                            />
-                                        </td>
-                                    </tr>
-                                );
-                            })}
-                        </tbody>
-                    </table>
-                </div>
+                                            <div>
+                                                <p className="text-sm font-bold text-slate-900">{u.name}</p>
+                                                <p className="text-xs text-slate-500">{u.role}</p>
+                                            </div>
+                                        </div>
+                                        <button className="text-slate-400 hover:text-red-600 p-2 transition-colors">
+                                            <Trash2 size={16} />
+                                        </button>
+                                    </div>
+                                ))}
+                                {currentRole.activeUsers === 0 && (
+                                    <div className="text-center py-12 text-slate-400 border-2 border-dashed border-slate-100 rounded-xl">
+                                        <Users size={32} className="mx-auto mb-2 opacity-50" />
+                                        <p>No users assigned to this role yet.</p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
       </div>

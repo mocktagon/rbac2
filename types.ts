@@ -44,6 +44,24 @@ export interface Candidate {
   experienceYears: number; // New field for scatter plot
 }
 
+export interface ListCollaborator {
+  userId: string;
+  name: string;
+  avatar: string;
+  role: 'Owner' | 'Editor' | 'Viewer';
+}
+
+export interface TalentList {
+  id: string;
+  name: string;
+  description: string;
+  projectId?: string; // If undefined, it is a Global List
+  candidateCount: number;
+  updatedAt: string;
+  collaborators: ListCollaborator[];
+  tags: string[];
+}
+
 export interface CreditRequest {
   id: string;
   projectId: string;
@@ -55,7 +73,7 @@ export interface CreditRequest {
   riskAnalysis?: string; // AI generated
 }
 
-export type ViewState = 'dashboard' | 'projects' | 'blueprints' | 'talent' | 'roles' | 'settings';
+export type ViewState = 'dashboard' | 'projects' | 'blueprints' | 'talent' | 'roles' | 'settings' | 'finops' | 'integrations';
 
 export interface AIAnalysisResponse {
   riskScore: number; // 0-100
@@ -93,7 +111,7 @@ export interface RoleDefinition {
 export interface UserContext {
   id: string;
   name: string;
-  role: 'ORG_OWNER' | 'PROJECT_OWNER';
+  role: 'ORG_OWNER' | 'PROJECT_OWNER' | 'FINANCE_ADMIN' | 'RECRUITER';
   assignedProjectId?: string; // If project owner
   avatar: string;
 }
@@ -108,4 +126,59 @@ export interface ActionItem {
   timestamp: string;
   actionLabel?: string;
   aiConfidence?: number; // 0-100
+}
+
+// Integration Types
+export interface Integration {
+  id: string;
+  name: string;
+  category: 'ATS' | 'Communication' | 'HRIS' | 'Calendar';
+  status: 'Connected' | 'Available' | 'Coming Soon';
+  icon: string; 
+  description: string;
+}
+
+// FinOps Types
+export interface UnitEconomics {
+  tierName: string;
+  baseCost: number; // per interview
+  durationMultiplier: number; // cost per minute
+  modelComplexityFactor: number; // 1.0, 1.5, etc.
+  description: string;
+}
+
+export interface FinancialMetric {
+  month: string;
+  tier1Spend: number;
+  tier2Spend: number;
+  tier3Spend: number;
+  forecast: number;
+}
+
+export interface Invoice {
+  id: string;
+  invoiceNumber: string;
+  date: string;
+  amount: number;
+  status: 'Paid' | 'Pending' | 'Overdue';
+  items: number;
+  pdfUrl?: string;
+}
+
+export interface PaymentMethod {
+  id: string;
+  type: 'Credit Card' | 'Bank Transfer';
+  last4: string;
+  expiry?: string;
+  isDefault: boolean;
+}
+
+export interface UsageRecord {
+  id: string;
+  project: string;
+  costCenter: string;
+  tier: string;
+  sessions: number;
+  cost: number;
+  trend: number; // percentage change vs last month
 }

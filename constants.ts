@@ -1,5 +1,5 @@
 
-import { Project, Blueprint, CreditRequest, RoleDefinition, PermissionFeature, UserContext, Candidate, ActionItem } from './types';
+import { Project, Blueprint, CreditRequest, RoleDefinition, PermissionFeature, UserContext, Candidate, ActionItem, Integration, UnitEconomics, FinancialMetric, Invoice, PaymentMethod, UsageRecord, TalentList } from './types';
 
 export const MOCK_USERS: UserContext[] = [
   {
@@ -14,6 +14,18 @@ export const MOCK_USERS: UserContext[] = [
     role: 'PROJECT_OWNER',
     assignedProjectId: 'p-102', // Project Phoenix
     avatar: 'DC'
+  },
+  {
+    id: 'u-3',
+    name: 'Alice Finance',
+    role: 'FINANCE_ADMIN',
+    avatar: 'AF'
+  },
+  {
+    id: 'u-4',
+    name: 'Bob Recruiter',
+    role: 'RECRUITER',
+    avatar: 'BR'
   }
 ];
 
@@ -188,6 +200,47 @@ MOCK_CANDIDATES[1] = {
     ]
 };
 
+// --- TALENT LISTS ---
+export const MOCK_TALENT_LISTS: TalentList[] = [
+    {
+        id: 'list-1',
+        name: 'Global Reservoir',
+        description: 'The complete database of all candidates across the organization.',
+        candidateCount: 14520,
+        updatedAt: 'Live',
+        collaborators: [
+            { userId: 'u-1', name: 'Sarah Jenning', avatar: 'SJ', role: 'Owner' }
+        ],
+        tags: ['All Access', 'System']
+    },
+    {
+        id: 'list-2',
+        name: 'Q4 Phoenix Hiring',
+        description: 'Frontend and Backend developers for the new Phoenix rollout.',
+        projectId: 'p-102',
+        candidateCount: 42,
+        updatedAt: '2 hrs ago',
+        collaborators: [
+            { userId: 'u-2', name: 'David Chen', avatar: 'DC', role: 'Owner' },
+            { userId: 'u-3', name: 'Alex M', avatar: 'AM', role: 'Viewer' }
+        ],
+        tags: ['Priority', 'Engineering']
+    },
+    {
+        id: 'list-3',
+        name: 'Data Science - London',
+        description: 'Sourcing pool for the new AI R&D center in London.',
+        projectId: 'p-103',
+        candidateCount: 18,
+        updatedAt: '1 day ago',
+        collaborators: [
+            { userId: 'u-1', name: 'Sarah Jenning', avatar: 'SJ', role: 'Editor' },
+            { userId: 'u-4', name: 'Emily Ross', avatar: 'ER', role: 'Owner' }
+        ],
+        tags: ['R&D', 'Onsite']
+    }
+];
+
 // --- CHART DATA ---
 
 export const MOCK_BUDGET_TREND = [
@@ -248,4 +301,46 @@ export const MOCK_ACTIONS: ActionItem[] = [
         actionLabel: 'Edit Blueprint',
         aiConfidence: 78
     }
+];
+
+// --- INTEGRATIONS DATA ---
+export const MOCK_INTEGRATIONS: Integration[] = [
+    { id: 'int-1', name: 'Greenhouse', category: 'ATS', status: 'Connected', icon: 'https://cdn.worldvectorlogo.com/logos/greenhouse-software.svg', description: 'Sync candidates and interview status.' },
+    { id: 'int-2', name: 'Slack', category: 'Communication', status: 'Connected', icon: 'https://cdn.worldvectorlogo.com/logos/slack-new-logo.svg', description: 'Real-time notifications for approvals.' },
+    { id: 'int-3', name: 'Workday', category: 'HRIS', status: 'Available', icon: 'https://cdn.worldvectorlogo.com/logos/workday-2.svg', description: 'Employee data synchronization.' },
+    { id: 'int-4', name: 'Microsoft Teams', category: 'Communication', status: 'Available', icon: 'https://cdn.worldvectorlogo.com/logos/microsoft-teams-1.svg', description: 'Interview scheduling and video links.' },
+    { id: 'int-5', name: 'Google Calendar', category: 'Calendar', status: 'Connected', icon: 'https://cdn.worldvectorlogo.com/logos/google-calendar.svg', description: 'Auto-schedule interview slots.' },
+];
+
+// --- FINOPS DATA ---
+export const UNIT_ECONOMICS: UnitEconomics[] = [
+    { tierName: 'Standard Async', baseCost: 15, durationMultiplier: 0.5, modelComplexityFactor: 1.0, description: 'Basic screening with standard text models.' },
+    { tierName: 'Live Voice AI', baseCost: 45, durationMultiplier: 1.2, modelComplexityFactor: 1.5, description: 'Real-time voice conversation with low latency.' },
+    { tierName: 'Expert Coding', baseCost: 60, durationMultiplier: 1.5, modelComplexityFactor: 2.0, description: 'Code execution sandbox + complex reasoning models.' },
+];
+
+export const FINOPS_DATA: FinancialMetric[] = [
+    { month: 'Jun', tier1Spend: 2000, tier2Spend: 1500, tier3Spend: 500, forecast: 4200 },
+    { month: 'Jul', tier1Spend: 2200, tier2Spend: 1800, tier3Spend: 2500, forecast: 6000 },
+    { month: 'Aug', tier1Spend: 2500, tier2Spend: 2000, tier3Spend: 4500, forecast: 8500 },
+    { month: 'Sep', tier1Spend: 2800, tier2Spend: 2200, tier3Spend: 6000, forecast: 10500 },
+    { month: 'Oct', tier1Spend: 3500, tier2Spend: 3000, tier3Spend: 8000, forecast: 14000 },
+    { month: 'Nov', tier1Spend: 4200, tier2Spend: 3500, tier3Spend: 10300, forecast: 17500 },
+];
+
+export const MOCK_INVOICES: Invoice[] = [
+  { id: 'inv-101', invoiceNumber: 'INV-2023-10-001', date: 'Oct 31, 2023', amount: 14500, status: 'Paid', items: 1250 },
+  { id: 'inv-102', invoiceNumber: 'INV-2023-09-001', date: 'Sep 30, 2023', amount: 11000, status: 'Paid', items: 980 },
+  { id: 'inv-103', invoiceNumber: 'INV-2023-11-001', date: 'Nov 30, 2023', amount: 18000, status: 'Pending', items: 1540 },
+];
+
+export const MOCK_PAYMENT_METHODS: PaymentMethod[] = [
+  { id: 'pm-1', type: 'Credit Card', last4: '4242', expiry: '12/25', isDefault: true },
+  { id: 'pm-2', type: 'Bank Transfer', last4: '9988', isDefault: false },
+];
+
+export const MOCK_USAGE_LOGS: UsageRecord[] = [
+  { id: 'ul-1', project: 'Project Phoenix', costCenter: 'CC-SF-402', tier: 'Live Voice AI', sessions: 150, cost: 6750, trend: 12 },
+  { id: 'ul-2', project: 'Alpha Migration', costCenter: 'CC-NY-001', tier: 'Standard Async', sessions: 450, cost: 6750, trend: -5 },
+  { id: 'ul-3', project: 'Cloud Native R&D', costCenter: 'CC-LDN-889', tier: 'Expert Coding', sessions: 80, cost: 4800, trend: 25 },
 ];

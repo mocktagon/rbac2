@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { LayoutDashboard, Building2, Users, Settings, Bell, Search, ShieldCheck, KeyRound, Wallet, Globe, Briefcase, FileText, ChevronDown, Layers } from 'lucide-react';
+import { LayoutDashboard, Building2, Users, Settings, Bell, Search, ShieldCheck, KeyRound, Wallet, Globe, Briefcase, FileText, ChevronDown, Layers, PieChart, Plug, UserPlus } from 'lucide-react';
 import { UserContext } from '../types';
 import { MOCK_USERS } from '../constants';
 
@@ -89,6 +89,23 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeView, onNavigate
             onClick={() => onNavigate('blueprints')} 
           />
 
+          <SidebarSection title="Platform & Ecosystem" />
+          {currentUser.role === 'ORG_OWNER' && (
+              <SidebarItem 
+                icon={PieChart} 
+                label="FinOps & Usage" 
+                active={activeView === 'finops'} 
+                onClick={() => onNavigate('finops')} 
+              />
+          )}
+          <SidebarItem 
+            icon={Plug} 
+            label="Integrations" 
+            active={activeView === 'integrations'} 
+            onClick={() => onNavigate('integrations')} 
+          />
+
+
           <SidebarSection title="Governance" />
           <SidebarItem 
             icon={KeyRound} 
@@ -99,8 +116,8 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeView, onNavigate
           
           {currentUser.role === 'ORG_OWNER' && (
             <SidebarItem 
-            icon={Wallet} 
-            label="Settings & Billing" 
+            icon={Settings} 
+            label="Settings" 
             active={activeView === 'settings'} 
             onClick={() => onNavigate('settings')} 
             />
@@ -126,7 +143,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeView, onNavigate
           </button>
 
           {showUserMenu && (
-            <div className="absolute bottom-20 left-4 right-4 bg-white rounded-xl shadow-2xl border border-slate-100 overflow-hidden ring-1 ring-slate-900/5">
+            <div className="absolute bottom-20 left-4 right-4 bg-white rounded-xl shadow-2xl border border-slate-100 overflow-hidden ring-1 ring-slate-900/5 z-50">
                 <div className="p-3 bg-slate-50 border-b border-slate-100">
                     <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Switch Persona</p>
                 </div>
@@ -153,7 +170,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeView, onNavigate
       <main className="flex-1 flex flex-col overflow-hidden bg-white">
         <header className="h-16 border-b border-slate-200 flex items-center justify-between px-8 bg-white sticky top-0 z-10">
           <div className="flex items-center gap-4">
-             {/* Breadcrumbs or Title could go here */}
+             {/* Breadcrumbs */}
              <div className="text-slate-400 text-sm font-medium flex items-center gap-2">
                 <Globe size={14} />
                 <span>Control Tower</span>
