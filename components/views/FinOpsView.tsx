@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { FINOPS_DATA, UNIT_ECONOMICS, MOCK_INVOICES, MOCK_PAYMENT_METHODS, MOCK_USAGE_LOGS, MOCK_USERS } from '../../constants';
+import { FINOPS_DATA_WS1, FINOPS_DATA_WS2, UNIT_ECONOMICS, MOCK_INVOICES, MOCK_PAYMENT_METHODS, MOCK_USAGE_LOGS, MOCK_USERS } from '../../constants';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend, PieChart, Pie, Cell } from 'recharts';
 import { DollarSign, TrendingUp, Info, CreditCard, Download, Settings, RefreshCw, CheckCircle2, ArrowUpRight, ArrowDownRight, Wallet } from 'lucide-react';
 import { ContextualInsight } from '../ui/ContextualInsight';
@@ -8,22 +8,29 @@ import { useToast } from '../../components/ui/Toast';
 
 interface FinOpsViewProps {
     onManageAccess: () => void;
+    workspaceId: string;
 }
 
-export const FinOpsView: React.FC<FinOpsViewProps> = ({ onManageAccess }) => {
+export const FinOpsView: React.FC<FinOpsViewProps> = ({ onManageAccess, workspaceId }) => {
     const [activeTab, setActiveTab] = useState<'Overview' | 'Billing' | 'Usage'>('Overview');
     const [autoRecharge, setAutoRecharge] = useState(true);
     const [showInsight, setShowInsight] = useState(true);
 
     const { addToast } = useToast();
 
+    // Select Data based on Workspace to simulate strict isolation
+    const finOpsData = workspaceId === 'ws-1' ? FINOPS_DATA_WS1 : FINOPS_DATA_WS2;
+    const workspaceInvoices = MOCK_INVOICES.filter(i => i.workspaceId === workspaceId);
+    const workspaceUsage = MOCK_USAGE_LOGS.filter(u => u.workspaceId === workspaceId);
+    const workspacePaymentMethods = MOCK_PAYMENT_METHODS.filter(p => p.workspaceId === workspaceId);
+
     // Mock specific users for FinOps facepile
     const finOpsUsers = MOCK_USERS.filter(u => u.role === 'FINANCE_ADMIN' || u.role === 'ORG_OWNER');
 
     // Dynamic Calculations
-    const totalForecast = FINOPS_DATA.reduce((acc, curr) => acc + curr.forecast, 0);
-    const totalActualSpend = FINOPS_DATA.reduce((acc, curr) => acc + curr.tier1Spend + curr.tier2Spend + curr.tier3Spend, 0);
-    const utilization = Math.round((totalActualSpend / totalForecast) * 100);
+    const totalForecast = finOpsData.reduce((acc, curr) => acc + curr.forecast, 0);
+    const totalActualSpend = finOpsData.reduce((acc, curr) => acc + curr.tier1Spend + curr.tier2Spend + curr.tier3Spend, 0);
+    const utilization = Math.round((totalActualSpend / totalForecast) * 100) || 0;
     const remaining = 100 - utilization;
 
     const OverviewTab = () => (
@@ -109,7 +116,7 @@ export const FinOpsView: React.FC<FinOpsViewProps> = ({ onManageAccess }) => {
                     <h3 className="font-bold text-slate-900 mb-6 flex items-center gap-2">Cost Breakdown <span className="text-xs font-normal text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">By Tier</span></h3>
                     <div className="h-72">
                         <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={FINOPS_DATA} stackOffset="expand">
+                            <BarChart data={finOpsData} stackOffset="expand">
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                                 <XAxis dataKey="month" tick={{fontSize: 12}} axisLine={false} tickLine={false} />
                                 <YAxis tick={{fontSize: 12}} axisLine={false} tickLine={false} tickFormatter={(val) => `${val*100}%`} />
@@ -127,7 +134,7 @@ export const FinOpsView: React.FC<FinOpsViewProps> = ({ onManageAccess }) => {
                     <h3 className="font-bold text-slate-900 mb-6">Spend Forecast vs Actual</h3>
                     <div className="h-72">
                         <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={FINOPS_DATA}>
+                            <AreaChart data={finOpsData}>
                                 <defs>
                                     <linearGradient id="colorForecast" x1="0" y1="0" x2="0" y2="1">
                                         <stop offset="5%" stopColor="#10b981" stopOpacity={0.5}/>
@@ -212,7 +219,8 @@ export const FinOpsView: React.FC<FinOpsViewProps> = ({ onManageAccess }) => {
                         <button className="text-xs font-bold text-indigo-600 hover:text-indigo-700">+ Add New</button>
                     </div>
                     <div className="space-y-3">
-                        {MOCK_PAYMENT_METHODS.map(pm => (
+                        {workspacePaymentMethods.length > 0 ? (
+                            workspacePaymentMethods.map(pm => (
                             <div key={pm.id} className="flex items-center justify-between p-3 border border-slate-100 rounded-lg hover:border-slate-300 transition-colors">
                                 <div className="flex items-center gap-3">
                                     <div className="p-2 bg-slate-50 rounded text-slate-600">
@@ -225,7 +233,9 @@ export const FinOpsView: React.FC<FinOpsViewProps> = ({ onManageAccess }) => {
                                 </div>
                                 {pm.isDefault && <span className="text-[10px] font-bold bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-full">Default</span>}
                             </div>
-                        ))}
+                        ))) : (
+                            <p className="text-sm text-slate-400 italic text-center py-4">No payment methods for this workspace.</p>
+                        )}
                     </div>
                 </div>
              </div>
@@ -251,7 +261,8 @@ export const FinOpsView: React.FC<FinOpsViewProps> = ({ onManageAccess }) => {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
-                            {MOCK_INVOICES.map((inv) => (
+                            {workspaceInvoices.length > 0 ? (
+                                workspaceInvoices.map((inv) => (
                                 <tr key={inv.id} className="hover:bg-slate-50 transition-colors">
                                     <td className="px-6 py-4 text-sm font-medium text-slate-900">{inv.invoiceNumber}</td>
                                     <td className="px-6 py-4 text-sm text-slate-500">{inv.date}</td>
@@ -271,7 +282,11 @@ export const FinOpsView: React.FC<FinOpsViewProps> = ({ onManageAccess }) => {
                                         </button>
                                     </td>
                                 </tr>
-                            ))}
+                            ))) : (
+                                <tr>
+                                    <td colSpan={6} className="px-6 py-8 text-center text-slate-400">No invoices found for this workspace.</td>
+                                </tr>
+                            )}
                         </tbody>
                     </table>
                 </div>
@@ -335,7 +350,7 @@ export const FinOpsView: React.FC<FinOpsViewProps> = ({ onManageAccess }) => {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
-                        {MOCK_USAGE_LOGS.map((log) => (
+                        {workspaceUsage.map((log) => (
                             <tr key={log.id} className="hover:bg-slate-50 transition-colors group">
                                 <td className="px-6 py-4">
                                     <p className="font-bold text-slate-900 text-sm">{log.project}</p>

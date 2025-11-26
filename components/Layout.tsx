@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
-import { LayoutDashboard, Building2, Users, Settings, Bell, Search, ShieldCheck, KeyRound, PieChart, Plug, MessageSquare, ChevronDown, Globe } from 'lucide-react';
-import { UserContext, ViewState } from '../types';
+import { LayoutDashboard, Building2, Users, Settings, Bell, Search, ShieldCheck, KeyRound, PieChart, Plug, MessageSquare, ChevronDown, Globe, Check } from 'lucide-react';
+import { UserContext, ViewState, Workspace } from '../types';
 import { MOCK_USERS } from '../constants';
 
 interface LayoutProps {
@@ -12,6 +12,9 @@ interface LayoutProps {
   currentUser: UserContext;
   onSwitchUser: (user: UserContext) => void;
   onToggleSupport: () => void;
+  workspaces: Workspace[];
+  currentWorkspace: Workspace;
+  onSwitchWorkspace: (workspace: Workspace) => void;
 }
 
 interface SidebarItemProps {
@@ -49,20 +52,61 @@ const SidebarSection = ({ title }: { title: string }) => (
     </div>
 );
 
-export const Layout: React.FC<LayoutProps> = ({ children, activeView, onNavigate, pendingRequestsCount, currentUser, onSwitchUser, onToggleSupport }) => {
+export const Layout: React.FC<LayoutProps> = ({ 
+  children, activeView, onNavigate, pendingRequestsCount, currentUser, onSwitchUser, onToggleSupport,
+  workspaces, currentWorkspace, onSwitchWorkspace
+}) => {
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showWorkspaceMenu, setShowWorkspaceMenu] = useState(false);
 
   return (
     <div className="flex h-screen bg-white text-slate-900 font-sans">
       {/* Sidebar */}
       <aside className="w-64 bg-slate-50/50 border-r border-slate-200 flex flex-col z-20">
-        <div className="p-6">
-          <div className="flex items-center gap-2 text-slate-900 font-bold text-xl tracking-tight">
-            <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white">
-                <ShieldCheck size={20} />
-            </div>
-            <span>Control Tower</span>
-          </div>
+        {/* Workspace Switcher */}
+        <div className="p-4">
+            <button 
+                onClick={() => setShowWorkspaceMenu(!showWorkspaceMenu)}
+                className="w-full flex items-center gap-3 p-2 rounded-xl hover:bg-white hover:shadow-sm border border-transparent hover:border-slate-200 transition-all text-left relative"
+            >
+                <div className="w-10 h-10 bg-gradient-to-br from-indigo-600 to-violet-700 rounded-lg flex items-center justify-center text-white font-bold shadow-md">
+                    {currentWorkspace.logo}
+                </div>
+                <div className="flex-1 overflow-hidden">
+                    <p className="text-sm font-bold text-slate-900 truncate">{currentWorkspace.name}</p>
+                    <p className="text-[10px] text-slate-500 font-medium uppercase tracking-wide">{currentWorkspace.plan}</p>
+                </div>
+                <ChevronDown size={14} className="text-slate-400 shrink-0" />
+            </button>
+
+            {/* Workspace Dropdown */}
+            {showWorkspaceMenu && (
+                <div className="absolute top-20 left-4 w-56 bg-white rounded-xl shadow-2xl border border-slate-100 overflow-hidden ring-1 ring-slate-900/5 z-50 animate-in slide-in-from-top-2 duration-200">
+                    <div className="p-3 bg-slate-50 border-b border-slate-100">
+                         <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">My Workspaces</p>
+                    </div>
+                    {workspaces.map(ws => (
+                        <button
+                            key={ws.id}
+                            onClick={() => {
+                                onSwitchWorkspace(ws);
+                                setShowWorkspaceMenu(false);
+                            }}
+                            className="w-full text-left px-4 py-3 text-sm hover:bg-slate-50 flex items-center justify-between group"
+                        >
+                           <div className="flex items-center gap-3">
+                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold ${currentWorkspace.id === ws.id ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-500'}`}>
+                                    {ws.logo}
+                                </div>
+                                <span className={`font-medium ${currentWorkspace.id === ws.id ? 'text-indigo-900' : 'text-slate-600'}`}>
+                                    {ws.name}
+                                </span>
+                           </div>
+                           {currentWorkspace.id === ws.id && <Check size={14} className="text-indigo-600" />}
+                        </button>
+                    ))}
+                </div>
+            )}
         </div>
 
         <nav className="flex-1 px-4 py-2 overflow-y-auto">
@@ -192,7 +236,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeView, onNavigate
              {/* Breadcrumbs */}
              <div className="text-slate-400 text-sm font-medium flex items-center gap-2">
                 <Globe size={14} />
-                <span>Control Tower</span>
+                <span>{currentWorkspace.name}</span>
                 <span className="text-slate-300">/</span>
                 <span className="text-slate-900 capitalize">{activeView}</span>
              </div>

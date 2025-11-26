@@ -1,6 +1,14 @@
 
+export interface Workspace {
+  id: string;
+  name: string;
+  logo: string;
+  plan: 'Enterprise' | 'Growth';
+}
+
 export interface Project {
   id: string;
+  workspaceId: string;
   name: string;
   owner: string;
   costCenter: string;
@@ -15,6 +23,7 @@ export interface Project {
 
 export interface Blueprint {
   id: string;
+  workspaceId: string;
   title: string;
   role: string;
   type: 'Global' | 'Private';
@@ -31,6 +40,7 @@ export interface Skill {
 
 export interface Candidate {
   id: string;
+  workspaceId: string;
   name: string;
   role: string;
   email: string;
@@ -53,6 +63,7 @@ export interface ListCollaborator {
 
 export interface TalentList {
   id: string;
+  workspaceId: string;
   name: string;
   description: string;
   projectId?: string; // If undefined, it is a Global List
@@ -64,6 +75,7 @@ export interface TalentList {
 
 export interface CreditRequest {
   id: string;
+  workspaceId: string;
   projectId: string;
   projectName: string;
   amountRequested: number;
@@ -113,12 +125,14 @@ export interface UserContext {
   name: string;
   role: 'ORG_OWNER' | 'PROJECT_OWNER' | 'FINANCE_ADMIN' | 'RECRUITER';
   assignedProjectId?: string; // If project owner
+  workspaceIds: string[];
   avatar: string;
 }
 
 // New Action Center Types
 export interface ActionItem {
   id: string;
+  workspaceId: string;
   type: 'Approval' | 'Suggestion' | 'Alert' | 'Insight';
   title: string;
   description: string;
@@ -157,6 +171,7 @@ export interface FinancialMetric {
 
 export interface Invoice {
   id: string;
+  workspaceId: string;
   invoiceNumber: string;
   date: string;
   amount: number;
@@ -167,6 +182,7 @@ export interface Invoice {
 
 export interface PaymentMethod {
   id: string;
+  workspaceId: string;
   type: 'Credit Card' | 'Bank Transfer';
   last4: string;
   expiry?: string;
@@ -175,6 +191,7 @@ export interface PaymentMethod {
 
 export interface UsageRecord {
   id: string;
+  workspaceId: string;
   project: string;
   costCenter: string;
   tier: string;

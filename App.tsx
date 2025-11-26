@@ -13,13 +13,17 @@ import { IntegrationsView } from './components/views/IntegrationsView';
 import { CollaboratorModal } from './components/CollaboratorModal';
 import { SupportAssistant } from './components/SupportAssistant';
 import { DashboardView } from './components/views/DashboardView';
-import { MOCK_PROJECTS, MOCK_BLUEPRINTS, MOCK_REQUESTS, MOCK_ROLES, MOCK_USERS, MOCK_CANDIDATES } from './constants';
+import { 
+    MOCK_PROJECTS, MOCK_BLUEPRINTS, MOCK_REQUESTS, MOCK_ROLES, 
+    MOCK_USERS, MOCK_CANDIDATES, MOCK_WORKSPACES, MOCK_TALENT_LISTS 
+} from './constants';
 import { CreditRequest, ViewState, RoleDefinition, UserContext, Project } from './types';
 import { ToastProvider, useToast } from './components/ui/Toast';
 
 const AppContent = () => {
   const [activeView, setActiveView] = useState<ViewState>('dashboard');
   const [currentUser, setCurrentUser] = useState<UserContext>(MOCK_USERS[0]); 
+  const [currentWorkspace, setCurrentWorkspace] = useState(MOCK_WORKSPACES[0]);
   const [isCollabModalOpen, setIsCollabModalOpen] = useState(false);
   const [isSupportOpen, setIsSupportOpen] = useState(false);
   
@@ -30,15 +34,22 @@ const AppContent = () => {
 
   const { addToast } = useToast();
 
-  const pendingRequestsCount = requests.filter(r => r.status === 'pending').length;
+  // FILTER DATA BY WORKSPACE
+  const workspaceProjects = projects.filter(p => p.workspaceId === currentWorkspace.id);
+  const workspaceCandidates = MOCK_CANDIDATES.filter(c => c.workspaceId === currentWorkspace.id);
+  const workspaceBlueprints = MOCK_BLUEPRINTS.filter(b => b.workspaceId === currentWorkspace.id);
+  const workspaceLists = MOCK_TALENT_LISTS.filter(l => l.workspaceId === currentWorkspace.id);
+  const workspaceRequests = requests.filter(r => r.workspaceId === currentWorkspace.id);
+
+  const pendingRequestsCount = workspaceRequests.filter(r => r.status === 'pending').length;
 
   const visibleProjects = currentUser.role === 'ORG_OWNER' 
-    ? projects 
-    : projects.filter(p => p.id === currentUser.assignedProjectId);
+    ? workspaceProjects 
+    : workspaceProjects.filter(p => p.id === currentUser.assignedProjectId);
 
   const visibleCandidates = currentUser.role === 'ORG_OWNER'
-    ? MOCK_CANDIDATES
-    : MOCK_CANDIDATES.filter(c => c.projectAffiliation === currentUser.assignedProjectId);
+    ? workspaceCandidates
+    : workspaceCandidates.filter(c => c.projectAffiliation === currentUser.assignedProjectId);
 
   const handleOpenRequest = (request: CreditRequest) => {
     setSelectedRequest(request);
@@ -100,6 +111,13 @@ const AppContent = () => {
         currentUser={currentUser}
         onSwitchUser={setCurrentUser}
         onToggleSupport={() => setIsSupportOpen(!isSupportOpen)}
+        workspaces={MOCK_WORKSPACES}
+        currentWorkspace={currentWorkspace}
+        onSwitchWorkspace={(ws) => {
+            setCurrentWorkspace(ws);
+            addToast('Workspace Switched', `Now managing ${ws.name}`, 'info');
+            setActiveView('dashboard');
+        }}
     >
       {activeView === 'dashboard' && (
         <DashboardView 
@@ -107,7 +125,7 @@ const AppContent = () => {
             projects={visibleProjects}
             candidates={visibleCandidates}
             onActionClick={id => {
-               const req = requests.find(r => r.id === 'req-001'); // Mock linking action to req
+               const req = requests.find(r => r.id === 'req-001'); 
                if(req) setSelectedRequest(req);
             }}
         />
@@ -119,11 +137,16 @@ const AppContent = () => {
             onUpdateProject={handleUpdateProject}
         />
       )}
-      {activeView === 'blueprints' && <BlueprintLibrary blueprints={MOCK_BLUEPRINTS} currentUser={currentUser} />}
+      {activeView === 'blueprints' && <BlueprintLibrary blueprints={workspaceBlueprints} currentUser={currentUser} />}
       {activeView === 'roles' && <RoleManager roles={roles} currentUser={currentUser} onSaveRole={handleSaveRole} />}
       
       {activeView === 'settings' && currentUser.role === 'ORG_OWNER' && <OrgSettings />}
-      {activeView === 'finops' && currentUser.role === 'ORG_OWNER' && <FinOpsView onManageAccess={() => setIsCollabModalOpen(true)} />}
+      {activeView === 'finops' && currentUser.role === 'ORG_OWNER' && (
+        <FinOpsView 
+            onManageAccess={() => setIsCollabModalOpen(true)} 
+            workspaceId={currentWorkspace.id} 
+        />
+      )}
       {activeView === 'integrations' && <IntegrationsView onManageAccess={() => setIsCollabModalOpen(true)} />}
       
       {activeView === 'talent' && (
@@ -131,6 +154,7 @@ const AppContent = () => {
             candidates={visibleCandidates} 
             isGlobalView={currentUser.role === 'ORG_OWNER'} 
             onManageAccess={() => setIsCollabModalOpen(true)}
+            workspaceId={currentWorkspace.id}
         />
       )}
 

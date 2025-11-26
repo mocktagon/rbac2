@@ -11,6 +11,7 @@ interface TalentPoolProps {
   candidates: Candidate[];
   isGlobalView: boolean;
   onManageAccess: () => void;
+  workspaceId: string;
 }
 
 const CandidateCard: React.FC<{ candidate: Candidate; onClick: () => void }> = ({ candidate, onClick }) => {
@@ -154,7 +155,7 @@ const TalentListCard: React.FC<{ list: TalentList; projectName?: string; onClick
     );
 };
 
-export const TalentPool: React.FC<TalentPoolProps> = ({ candidates, isGlobalView, onManageAccess }) => {
+export const TalentPool: React.FC<TalentPoolProps> = ({ candidates, isGlobalView, onManageAccess, workspaceId }) => {
   const [lists, setLists] = useState<TalentList[]>(MOCK_TALENT_LISTS);
   const [viewMode, setViewMode] = useState<'lists' | 'candidates'>('lists');
   const [selectedList, setSelectedList] = useState<TalentList | null>(null);
@@ -191,6 +192,7 @@ export const TalentPool: React.FC<TalentPoolProps> = ({ candidates, isGlobalView
   const handleCreateList = () => {
     const newList: TalentList = {
         id: `list-${Date.now()}`,
+        workspaceId,
         name: newListName,
         description: newListDesc,
         projectId: createType === 'Project' ? newListProject : undefined,
