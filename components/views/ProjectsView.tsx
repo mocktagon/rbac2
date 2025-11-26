@@ -1,7 +1,10 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Project } from '../../types';
 import { AlertCircle, CheckCircle, ShieldAlert, Settings, MoreHorizontal, Filter, ArrowUpRight, Save, DollarSign, PlayCircle, PauseCircle, Activity } from 'lucide-react';
 import { MOCK_USERS } from '../../constants';
+import { ContextualInsight } from '../ui/ContextualInsight';
+import { useToast } from '../../components/ui/Toast';
 
 interface ProjectsViewProps {
   projects: Project[];
@@ -56,6 +59,9 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({ projects, onManageAc
   const [filter, setFilter] = useState<'All' | 'Active' | 'Risk'>('All');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
+  const [showInsight, setShowInsight] = useState(true);
+
+  const { addToast } = useToast();
 
   // Mock edit state for budget controls
   const [tempBudget, setTempBudget] = useState<{soft: number, hard: number}>({soft: 0, hard: 0});
@@ -96,6 +102,20 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({ projects, onManageAc
 
   return (
     <div className="space-y-6">
+      
+      {showInsight && (
+        <ContextualInsight 
+          type="risk"
+          title="Budget Velocity Alert"
+          description="Based on interview scheduling velocity, 'Project Phoenix' is projected to hit its Hard Cap in 12 days. This is 30% faster than typical burn rates."
+          metric="12 Days"
+          metricLabel="Time to Cap"
+          actionLabel="Review Usage"
+          onAction={() => addToast('Insight Actioned', 'Redirecting to detailed usage analytics...', 'info')}
+          onDismiss={() => setShowInsight(false)}
+        />
+      )}
+
       <div className="flex justify-between items-start">
         <div>
           <h2 className="text-2xl font-bold text-slate-900">Requisition Authority</h2>

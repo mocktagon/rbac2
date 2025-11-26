@@ -4,6 +4,8 @@ import { Candidate, TalentList, ListCollaborator } from '../../types';
 import { MOCK_TALENT_LISTS, MOCK_USERS, MOCK_PROJECTS } from '../../constants';
 import { Search, Filter, Lock, Unlock, ChevronRight, X, Briefcase, MapPin, Users, Globe, Plus, Share2, MoreHorizontal, LayoutGrid, List as ListIcon, Shield, ChevronLeft, Settings, Calendar, User, ArrowRight, Info, Check } from 'lucide-react';
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer } from 'recharts';
+import { ContextualInsight } from '../ui/ContextualInsight';
+import { useToast } from '../../components/ui/Toast';
 
 interface TalentPoolProps {
   candidates: Candidate[];
@@ -157,6 +159,7 @@ export const TalentPool: React.FC<TalentPoolProps> = ({ candidates, isGlobalView
   const [viewMode, setViewMode] = useState<'lists' | 'candidates'>('lists');
   const [selectedList, setSelectedList] = useState<TalentList | null>(null);
   const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null);
+  const [showInsight, setShowInsight] = useState(true);
   
   // Share Modal State
   const [showShareModal, setShowShareModal] = useState(false);
@@ -172,6 +175,7 @@ export const TalentPool: React.FC<TalentPoolProps> = ({ candidates, isGlobalView
   const [searchTerm, setSearchTerm] = useState('');
 
   const recruiters = MOCK_USERS.filter(u => u.role === 'RECRUITER' || u.role === 'ORG_OWNER').slice(0,3);
+  const { addToast } = useToast();
 
   const handleListClick = (list: TalentList) => {
       setSelectedList(list);
@@ -228,6 +232,19 @@ export const TalentPool: React.FC<TalentPoolProps> = ({ candidates, isGlobalView
     <div className="flex h-full gap-6 relative">
       <div className={`flex-1 flex flex-col space-y-6 transition-all ${selectedCandidate ? 'w-1/2 pr-4' : 'w-full'}`}>
         
+        {isGlobalView && showInsight && viewMode === 'lists' && (
+            <ContextualInsight 
+                type="talent"
+                title="Cross-Project Talent Matching"
+                description="Analysis detected 5 rejected candidates in 'Project Phoenix' that match the 'Senior Backend' role requirements for 'Cloud Native R&D' with >85% fit."
+                metric="5 Matches"
+                metricLabel="High Potential"
+                actionLabel="Review Candidates"
+                onAction={() => addToast('Candidates Filtered', 'Showing suggested matches.', 'success')}
+                onDismiss={() => setShowInsight(false)}
+            />
+        )}
+
         {/* Header */}
         <div className="flex justify-between items-end">
             <div>

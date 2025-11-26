@@ -1,5 +1,5 @@
 
-import { Project, Blueprint, CreditRequest, RoleDefinition, PermissionFeature, UserContext, Candidate, ActionItem, Integration, UnitEconomics, FinancialMetric, Invoice, PaymentMethod, UsageRecord, TalentList } from './types';
+import { Project, Blueprint, CreditRequest, RoleDefinition, PermissionFeature, UserContext, Candidate, ActionItem, Integration, UnitEconomics, FinancialMetric, Invoice, PaymentMethod, UsageRecord, TalentList, TourGuide } from './types';
 
 export const MOCK_USERS: UserContext[] = [
   {
@@ -343,4 +343,44 @@ export const MOCK_USAGE_LOGS: UsageRecord[] = [
   { id: 'ul-1', project: 'Project Phoenix', costCenter: 'CC-SF-402', tier: 'Live Voice AI', sessions: 150, cost: 6750, trend: 12 },
   { id: 'ul-2', project: 'Alpha Migration', costCenter: 'CC-NY-001', tier: 'Standard Async', sessions: 450, cost: 6750, trend: -5 },
   { id: 'ul-3', project: 'Cloud Native R&D', costCenter: 'CC-LDN-889', tier: 'Expert Coding', sessions: 80, cost: 4800, trend: 25 },
+];
+
+// --- TOUR & SUPPORT DATA ---
+export const MOCK_GUIDES: TourGuide[] = [
+    {
+        id: 'guide-1',
+        title: 'Approve Budget Expansion',
+        category: 'Governance',
+        duration: '2 min',
+        targetView: 'projects',
+        steps: [
+            { title: 'Navigate to Projects', description: 'Go to the "Requisition Authority" page.' },
+            { title: 'Identify Blocked Projects', description: 'Look for projects with a red "BLOCKED" status.' },
+            { title: 'Expand Budget', description: 'Click the 3-dots menu on the project card and select "Edit Budget Caps".' }
+        ]
+    },
+    {
+        id: 'guide-2',
+        title: 'Create Global Talent Pool',
+        category: 'Hiring',
+        duration: '3 min',
+        targetView: 'talent',
+        steps: [
+            { title: 'Go to Talent Assets', description: 'Navigate to the "Talent Pool" section.' },
+            { title: 'Select Global View', description: 'Ensure you are viewing the Global Reservoir section.' },
+            { title: 'Create List', description: 'Click "New List" and select "Global Pool" as the type.' }
+        ]
+    },
+    {
+        id: 'guide-3',
+        title: 'Review Financial Spend',
+        category: 'Finance',
+        duration: '5 min',
+        targetView: 'finops',
+        steps: [
+            { title: 'Open FinOps Dashboard', description: 'Click "FinOps & Usage" in the sidebar.' },
+            { title: 'Analyze Trends', description: 'Check the "Spend Forecast" chart in the Overview tab.' },
+            { title: 'Download Invoices', description: 'Switch to the "Billing" tab to view and download past invoices.' }
+        ]
+    }
 ];

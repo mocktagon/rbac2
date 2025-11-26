@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { LayoutDashboard, Building2, Users, Settings, Bell, Search, ShieldCheck, KeyRound, Wallet, Globe, Briefcase, FileText, ChevronDown, Layers, PieChart, Plug, UserPlus } from 'lucide-react';
+import { LayoutDashboard, Building2, Users, Settings, Bell, Search, ShieldCheck, KeyRound, Wallet, Globe, Briefcase, FileText, ChevronDown, Layers, PieChart, Plug, UserPlus, BookOpen, MessageSquare } from 'lucide-react';
 import { UserContext } from '../types';
 import { MOCK_USERS } from '../constants';
 
@@ -11,6 +11,7 @@ interface LayoutProps {
   pendingRequestsCount: number;
   currentUser: UserContext;
   onSwitchUser: (user: UserContext) => void;
+  onToggleSupport: () => void;
 }
 
 const SidebarItem = ({ icon: Icon, label, active, onClick, badge }: any) => (
@@ -40,7 +41,7 @@ const SidebarSection = ({ title }: { title: string }) => (
     </div>
 );
 
-export const Layout: React.FC<LayoutProps> = ({ children, activeView, onNavigate, pendingRequestsCount, currentUser, onSwitchUser }) => {
+export const Layout: React.FC<LayoutProps> = ({ children, activeView, onNavigate, pendingRequestsCount, currentUser, onSwitchUser, onToggleSupport }) => {
   const [showUserMenu, setShowUserMenu] = useState(false);
 
   return (
@@ -122,6 +123,16 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeView, onNavigate
             onClick={() => onNavigate('settings')} 
             />
           )}
+
+          <div className="mt-8 border-t border-slate-200 pt-4">
+             <button
+                onClick={onToggleSupport}
+                className="w-full flex items-center gap-3 px-3 py-2 text-sm font-bold text-indigo-600 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition-colors"
+             >
+                <MessageSquare size={18} />
+                <span>Support & Tour</span>
+             </button>
+          </div>
         </nav>
 
         {/* User Switcher */}

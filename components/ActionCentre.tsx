@@ -1,10 +1,13 @@
-
 import React, { useState } from 'react';
 import { ActionItem } from '../types';
 import { MOCK_ACTIONS } from '../constants';
 import { Sparkles, AlertTriangle, CheckCircle2, Clock, ArrowRight, BrainCircuit, X } from 'lucide-react';
 
-export const ActionCentre = () => {
+interface ActionCentreProps {
+    onActionClick?: (id: string) => void;
+}
+
+export const ActionCentre: React.FC<ActionCentreProps> = ({ onActionClick }) => {
     const [activeTab, setActiveTab] = useState<'Tasks' | 'Insights'>('Tasks');
 
     const tasks = MOCK_ACTIONS.filter(a => a.type === 'Approval' || a.type === 'Alert');
@@ -79,7 +82,10 @@ export const ActionCentre = () => {
                         )}
 
                         <div className="pl-2">
-                            <button className="w-full py-2 bg-slate-50 group-hover:bg-slate-100 text-slate-600 group-hover:text-slate-900 text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-2">
+                            <button 
+                                onClick={() => onActionClick && onActionClick(item.id)}
+                                className="w-full py-2 bg-slate-50 group-hover:bg-slate-100 text-slate-600 group-hover:text-slate-900 text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-2"
+                            >
                                 {item.actionLabel} <ArrowRight size={12} />
                             </button>
                         </div>

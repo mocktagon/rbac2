@@ -182,3 +182,36 @@ export interface UsageRecord {
   cost: number;
   trend: number; // percentage change vs last month
 }
+
+// Notification Types
+export interface Notification {
+  id: string;
+  title: string;
+  message: string;
+  type: 'success' | 'error' | 'info';
+}
+
+// Support & Tour Types
+export interface TourStep {
+  title: string;
+  description: string;
+}
+
+export interface TourGuide {
+  id: string;
+  title: string;
+  category: 'Governance' | 'Finance' | 'Hiring';
+  duration: string;
+  steps: TourStep[];
+  targetView: ViewState;
+}
+
+export interface ChatMessage {
+  id: string;
+  sender: 'user' | 'ai';
+  text: string;
+  suggestedAction?: {
+    label: string;
+    view: ViewState;
+  };
+}

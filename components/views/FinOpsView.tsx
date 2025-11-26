@@ -1,8 +1,10 @@
 
 import React, { useState } from 'react';
 import { FINOPS_DATA, UNIT_ECONOMICS, MOCK_INVOICES, MOCK_PAYMENT_METHODS, MOCK_USAGE_LOGS, MOCK_USERS } from '../../constants';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
-import { DollarSign, TrendingUp, Info, CreditCard, Download, Settings, RefreshCw, AlertCircle, ArrowUpRight, ArrowDownRight, Wallet, Users, Lock } from 'lucide-react';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend, PieChart, Pie, Cell } from 'recharts';
+import { DollarSign, TrendingUp, Info, CreditCard, Download, Settings, RefreshCw, AlertCircle, ArrowUpRight, ArrowDownRight, Wallet, Users, Lock, CheckCircle2 } from 'lucide-react';
+import { ContextualInsight } from '../ui/ContextualInsight';
+import { useToast } from '../../components/ui/Toast';
 
 interface FinOpsViewProps {
     onManageAccess: () => void;
@@ -11,8 +13,11 @@ interface FinOpsViewProps {
 export const FinOpsView: React.FC<FinOpsViewProps> = ({ onManageAccess }) => {
     const [activeTab, setActiveTab] = useState<'Overview' | 'Billing' | 'Usage'>('Overview');
     const [autoRecharge, setAutoRecharge] = useState(true);
+    const [showInsight, setShowInsight] = useState(true);
 
     const totalForecast = FINOPS_DATA.reduce((acc, curr) => acc + curr.forecast, 0);
+
+    const { addToast } = useToast();
 
     // Mock specific users for FinOps facepile
     const finOpsUsers = MOCK_USERS.filter(u => u.role === 'FINANCE_ADMIN' || u.role === 'ORG_OWNER');
@@ -51,17 +56,45 @@ export const FinOpsView: React.FC<FinOpsViewProps> = ({ onManageAccess }) => {
                         <ArrowDownRight size={14} /> via Bulk Purchasing
                     </div>
                 </div>
-                <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-center items-center text-center">
-                    <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Budget Health</h3>
-                    <div className="relative w-32 h-32">
-                         <svg className="w-full h-full transform -rotate-90">
-                            <circle cx="64" cy="64" r="60" stroke="#f1f5f9" strokeWidth="8" fill="transparent" />
-                            <circle cx="64" cy="64" r="60" stroke="#6366f1" strokeWidth="8" fill="transparent" strokeDasharray="377" strokeDashoffset="132" strokeLinecap="round" />
-                        </svg>
-                        <div className="absolute inset-0 flex flex-col items-center justify-center">
-                            <span className="text-2xl font-bold text-slate-900">65%</span>
-                            <span className="text-[10px] uppercase font-bold text-slate-400">Utilized</span>
+                
+                {/* Budget Health - Replaced SVG with Recharts */}
+                <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col relative overflow-hidden">
+                    <div className="flex justify-between items-center mb-2">
+                        <h3 className="font-bold text-slate-700">Budget Health</h3>
+                        <div className="flex items-center gap-1 text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full border border-emerald-100">
+                            <CheckCircle2 size={12} /> On Track
                         </div>
+                    </div>
+                    
+                    <div className="flex-1 flex items-center justify-center relative min-h-[140px]">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                                <Pie
+                                    data={[{ value: 65 }, { value: 35 }]}
+                                    cx="50%"
+                                    cy="50%"
+                                    innerRadius={55}
+                                    outerRadius={75}
+                                    startAngle={90}
+                                    endAngle={-270}
+                                    dataKey="value"
+                                    stroke="none"
+                                >
+                                    <Cell fill="#6366f1" />
+                                    <Cell fill="#f1f5f9" />
+                                </Pie>
+                            </PieChart>
+                        </ResponsiveContainer>
+                        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                            <span className="text-3xl font-bold text-slate-900">65%</span>
+                            <span className="text-[10px] uppercase font-bold text-slate-400">Consumed</span>
+                        </div>
+                    </div>
+                    
+                    <div className="mt-2 text-center">
+                        <p className="text-xs text-slate-500">
+                            Spending is <span className="font-bold text-emerald-600">5% lower</span> than forecasted.
+                        </p>
                     </div>
                 </div>
             </div>
@@ -353,6 +386,20 @@ export const FinOpsView: React.FC<FinOpsViewProps> = ({ onManageAccess }) => {
 
     return (
         <div className="space-y-8 h-full flex flex-col">
+            
+            {showInsight && (
+                <ContextualInsight 
+                    type="opportunity"
+                    title="Optimization Opportunity"
+                    description="Analysis of 450 sessions in 'Alpha Migration' shows 40% utilized 'Live Voice' but only required 'Standard Async' models."
+                    metric="$4.2k"
+                    metricLabel="Potential Savings"
+                    actionLabel="Apply Policy"
+                    onAction={() => addToast('Policy Applied', 'Tier downgrades enforced for non-critical interviews.', 'success')}
+                    onDismiss={() => setShowInsight(false)}
+                />
+            )}
+
             <div className="flex justify-between items-start">
                 <div>
                     <h2 className="text-2xl font-bold text-slate-900">Financial Operations</h2>

@@ -1,7 +1,7 @@
-
 import React, { useState } from 'react';
 import { MOCK_INTEGRATIONS, MOCK_USERS } from '../../constants';
-import { CheckCircle2, Cloud, Plus, ArrowRight, Plug, Settings } from 'lucide-react';
+import { CheckCircle2, Cloud, Plus, ArrowRight, Plug, Settings, Loader2 } from 'lucide-react';
+import { useToast } from '../../components/ui/Toast';
 
 interface IntegrationsViewProps {
     onManageAccess: () => void;
@@ -9,7 +9,18 @@ interface IntegrationsViewProps {
 
 export const IntegrationsView: React.FC<IntegrationsViewProps> = ({ onManageAccess }) => {
   const [showRequestForm, setShowRequestForm] = useState(false);
+  const [connectingId, setConnectingId] = useState<string | null>(null);
   const adminUsers = MOCK_USERS.filter(u => u.role === 'ORG_OWNER');
+  const { addToast } = useToast();
+
+  const handleConnect = (name: string, id: string) => {
+    setConnectingId(id);
+    // Simulate API call
+    setTimeout(() => {
+        setConnectingId(null);
+        addToast('Connection Successful', `Successfully authorized access to ${name}.`, 'success');
+    }, 1500);
+  };
 
   return (
     <div className="space-y-8">
@@ -72,7 +83,7 @@ export const IntegrationsView: React.FC<IntegrationsViewProps> = ({ onManageAcce
             </div>
             <div className="flex justify-end gap-3">
                 <button onClick={() => setShowRequestForm(false)} className="text-slate-400 hover:text-white text-sm font-medium">Cancel</button>
-                <button onClick={() => setShowRequestForm(false)} className="bg-indigo-500 hover:bg-indigo-400 text-white px-4 py-2 rounded-lg text-sm font-bold">Submit Request</button>
+                <button onClick={() => { setShowRequestForm(false); addToast('Request Sent', 'IT Admin has been notified.', 'info'); }} className="bg-indigo-500 hover:bg-indigo-400 text-white px-4 py-2 rounded-lg text-sm font-bold">Submit Request</button>
             </div>
         </div>
       )}
@@ -101,8 +112,17 @@ export const IntegrationsView: React.FC<IntegrationsViewProps> = ({ onManageAcce
                         <CheckCircle2 size={16} /> Active
                     </button>
                 ) : (
-                    <button className="w-full py-2 bg-slate-900 text-white rounded-lg font-bold text-sm hover:bg-slate-800 transition-colors flex items-center justify-center gap-2">
-                        <Plug size={16} /> Connect
+                    <button 
+                        onClick={() => handleConnect(integration.name, integration.id)}
+                        disabled={connectingId === integration.id}
+                        className="w-full py-2 bg-slate-900 text-white rounded-lg font-bold text-sm hover:bg-slate-800 transition-colors flex items-center justify-center gap-2 disabled:bg-slate-700"
+                    >
+                        {connectingId === integration.id ? (
+                            <Loader2 size={16} className="animate-spin" />
+                        ) : (
+                            <Plug size={16} />
+                        )}
+                        {connectingId === integration.id ? 'Connecting...' : 'Connect'}
                     </button>
                 )}
             </div>
