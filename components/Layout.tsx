@@ -1,20 +1,28 @@
 
 import React, { useState } from 'react';
-import { LayoutDashboard, Building2, Users, Settings, Bell, Search, ShieldCheck, KeyRound, Wallet, Globe, Briefcase, FileText, ChevronDown, Layers, PieChart, Plug, UserPlus, BookOpen, MessageSquare } from 'lucide-react';
-import { UserContext } from '../types';
+import { LayoutDashboard, Building2, Users, Settings, Bell, Search, ShieldCheck, KeyRound, PieChart, Plug, MessageSquare, ChevronDown, Globe } from 'lucide-react';
+import { UserContext, ViewState } from '../types';
 import { MOCK_USERS } from '../constants';
 
 interface LayoutProps {
   children: React.ReactNode;
-  activeView: string;
-  onNavigate: (view: any) => void;
+  activeView: ViewState;
+  onNavigate: (view: ViewState) => void;
   pendingRequestsCount: number;
   currentUser: UserContext;
   onSwitchUser: (user: UserContext) => void;
   onToggleSupport: () => void;
 }
 
-const SidebarItem = ({ icon: Icon, label, active, onClick, badge }: any) => (
+interface SidebarItemProps {
+  icon: React.ElementType;
+  label: string;
+  active: boolean;
+  onClick: () => void;
+  badge?: number;
+}
+
+const SidebarItem: React.FC<SidebarItemProps> = ({ icon: Icon, label, active, onClick, badge }) => (
   <button
     onClick={onClick}
     className={`w-full flex items-center justify-between px-3 py-2 text-sm font-medium transition-all rounded-lg mb-1 ${
@@ -27,7 +35,7 @@ const SidebarItem = ({ icon: Icon, label, active, onClick, badge }: any) => (
       <Icon size={18} className={active ? 'text-white' : 'text-slate-500'} />
       <span>{label}</span>
     </div>
-    {badge > 0 && (
+    {badge !== undefined && badge > 0 && (
       <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[1.25rem] text-center">
         {badge}
       </span>
@@ -84,7 +92,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeView, onNavigate
             onClick={() => onNavigate('talent')} 
           />
           <SidebarItem 
-            icon={FileText} 
+            icon={Globe} 
             label="Templates" 
             active={activeView === 'blueprints'} 
             onClick={() => onNavigate('blueprints')} 

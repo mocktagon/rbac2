@@ -61,6 +61,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({ projects, onManageAc
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
   const [showInsight, setShowInsight] = useState(true);
 
+  // Add functionality for creating projects if needed later, currently mock
   const { addToast } = useToast();
 
   // Mock edit state for budget controls
@@ -92,6 +93,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({ projects, onManageAc
           } 
       });
       setEditingId(null);
+      addToast('Budget Caps Updated', 'New spending limits have been applied.', 'success');
   };
 
   const displayedProjects = projects.filter(p => {
@@ -207,6 +209,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({ projects, onManageAc
                             onClick={() => {
                                 onUpdateProject(project.id, { status: project.status === 'active' ? 'blocked' : 'active' });
                                 setActiveMenuId(null);
+                                addToast('Project Status Updated', `Project is now ${project.status === 'active' ? 'Paused' : 'Active'}`, 'info');
                             }}
                             className="w-full text-left px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-indigo-600 font-medium flex items-center gap-2"
                         >

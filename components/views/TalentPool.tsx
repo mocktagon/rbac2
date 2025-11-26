@@ -1,8 +1,8 @@
 
 import React, { useState } from 'react';
-import { Candidate, TalentList, ListCollaborator } from '../../types';
+import { Candidate, TalentList } from '../../types';
 import { MOCK_TALENT_LISTS, MOCK_USERS, MOCK_PROJECTS } from '../../constants';
-import { Search, Filter, Lock, Unlock, ChevronRight, X, Briefcase, MapPin, Users, Globe, Plus, Share2, MoreHorizontal, LayoutGrid, List as ListIcon, Shield, ChevronLeft, Settings, Calendar, User, ArrowRight, Info, Check } from 'lucide-react';
+import { Search, Lock, Unlock, ChevronRight, X, Briefcase, MapPin, Globe, Plus, Share2, Settings, Info } from 'lucide-react';
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer } from 'recharts';
 import { ContextualInsight } from '../ui/ContextualInsight';
 import { useToast } from '../../components/ui/Toast';

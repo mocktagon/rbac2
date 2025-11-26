@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { FINOPS_DATA, UNIT_ECONOMICS, MOCK_INVOICES, MOCK_PAYMENT_METHODS, MOCK_USAGE_LOGS, MOCK_USERS } from '../../constants';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend, PieChart, Pie, Cell } from 'recharts';
-import { DollarSign, TrendingUp, Info, CreditCard, Download, Settings, RefreshCw, AlertCircle, ArrowUpRight, ArrowDownRight, Wallet, Users, Lock, CheckCircle2 } from 'lucide-react';
+import { DollarSign, TrendingUp, Info, CreditCard, Download, Settings, RefreshCw, CheckCircle2, ArrowUpRight, ArrowDownRight, Wallet } from 'lucide-react';
 import { ContextualInsight } from '../ui/ContextualInsight';
 import { useToast } from '../../components/ui/Toast';
 
@@ -15,12 +15,16 @@ export const FinOpsView: React.FC<FinOpsViewProps> = ({ onManageAccess }) => {
     const [autoRecharge, setAutoRecharge] = useState(true);
     const [showInsight, setShowInsight] = useState(true);
 
-    const totalForecast = FINOPS_DATA.reduce((acc, curr) => acc + curr.forecast, 0);
-
     const { addToast } = useToast();
 
     // Mock specific users for FinOps facepile
     const finOpsUsers = MOCK_USERS.filter(u => u.role === 'FINANCE_ADMIN' || u.role === 'ORG_OWNER');
+
+    // Dynamic Calculations
+    const totalForecast = FINOPS_DATA.reduce((acc, curr) => acc + curr.forecast, 0);
+    const totalActualSpend = FINOPS_DATA.reduce((acc, curr) => acc + curr.tier1Spend + curr.tier2Spend + curr.tier3Spend, 0);
+    const utilization = Math.round((totalActualSpend / totalForecast) * 100);
+    const remaining = 100 - utilization;
 
     const OverviewTab = () => (
         <div className="space-y-8 animate-in fade-in duration-300">
@@ -36,7 +40,7 @@ export const FinOpsView: React.FC<FinOpsViewProps> = ({ onManageAccess }) => {
                         </div>
                         <h3 className="font-bold text-slate-700">Projected Q4 Spend</h3>
                     </div>
-                    <p className="text-3xl font-bold text-slate-900">{totalForecast.toLocaleString()}</p>
+                    <p className="text-3xl font-bold text-slate-900">${totalForecast.toLocaleString()}</p>
                     <div className="flex items-center gap-1 text-xs text-red-500 font-bold mt-1">
                         <ArrowUpRight size={14} /> +12% vs previous quarter
                     </div>
@@ -57,12 +61,12 @@ export const FinOpsView: React.FC<FinOpsViewProps> = ({ onManageAccess }) => {
                     </div>
                 </div>
                 
-                {/* Budget Health - Replaced SVG with Recharts */}
+                {/* Budget Health */}
                 <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col relative overflow-hidden">
                     <div className="flex justify-between items-center mb-2">
                         <h3 className="font-bold text-slate-700">Budget Health</h3>
-                        <div className="flex items-center gap-1 text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full border border-emerald-100">
-                            <CheckCircle2 size={12} /> On Track
+                        <div className={`flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-full border ${utilization > 100 ? 'bg-red-50 text-red-600 border-red-100' : 'bg-emerald-50 text-emerald-600 border-emerald-100'}`}>
+                            {utilization > 100 ? 'Over Budget' : <><CheckCircle2 size={12} /> On Track</>}
                         </div>
                     </div>
                     
@@ -70,7 +74,7 @@ export const FinOpsView: React.FC<FinOpsViewProps> = ({ onManageAccess }) => {
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
                                 <Pie
-                                    data={[{ value: 65 }, { value: 35 }]}
+                                    data={[{ value: utilization }, { value: remaining > 0 ? remaining : 0 }]}
                                     cx="50%"
                                     cy="50%"
                                     innerRadius={55}
@@ -80,20 +84,20 @@ export const FinOpsView: React.FC<FinOpsViewProps> = ({ onManageAccess }) => {
                                     dataKey="value"
                                     stroke="none"
                                 >
-                                    <Cell fill="#6366f1" />
+                                    <Cell fill={utilization > 100 ? '#ef4444' : '#6366f1'} />
                                     <Cell fill="#f1f5f9" />
                                 </Pie>
                             </PieChart>
                         </ResponsiveContainer>
                         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                            <span className="text-3xl font-bold text-slate-900">65%</span>
+                            <span className={`text-3xl font-bold ${utilization > 100 ? 'text-red-600' : 'text-slate-900'}`}>{utilization}%</span>
                             <span className="text-[10px] uppercase font-bold text-slate-400">Consumed</span>
                         </div>
                     </div>
                     
                     <div className="mt-2 text-center">
                         <p className="text-xs text-slate-500">
-                            Spending is <span className="font-bold text-emerald-600">5% lower</span> than forecasted.
+                            Spending is <span className={`font-bold ${utilization < 90 ? 'text-emerald-600' : 'text-amber-600'}`}>{100 - utilization}% {utilization < 100 ? 'remaining' : 'over'}</span> vs forecast.
                         </p>
                     </div>
                 </div>
